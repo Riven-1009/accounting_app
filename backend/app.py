@@ -1,6 +1,6 @@
 from flask import Flask
 from models import db
-from routes import bp
+from routes import bp  # 你的蓝图
 
 def create_app():
     app = Flask(__name__)

@@ -7,16 +7,26 @@ bp = Blueprint('api', __name__)
 @bp.route('/entries', methods=['POST'])
 def add_entry():
     data = request.json
-    entry = Entry(
-        type=data['type'],
-        amount=data['amount'],
-        category=data['category'],
-        note=data.get('note', ''),
-        date=data.get('date', datetime.now().strftime('%Y-%m-%d'))
-    )
-    db.session.add(entry)
-    db.session.commit()
-    return jsonify({'message': 'Entry added'}), 201
+    print('收到数据:', data)  # 调试用
+    if not data:
+        return jsonify({'error': '请求体为空或格式错误'}), 400
+    # 其余代码...
+    try:
+        date_str = data.get('date', datetime.now().strftime('%Y-%m-%d'))
+        date_obj = datetime.strptime(date_str, '%Y-%m-%d').date()
+        entry = Entry(
+            type=data['type'],
+            amount=data['amount'],
+            category=data['category'],
+            note=data.get('note', ''),
+            date=date_obj
+        )
+        db.session.add(entry)
+        db.session.commit()
+        return jsonify({'message': 'Entry added'}), 201
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': str(e)}), 500
 
 @bp.route('/entries', methods=['GET'])
 def get_entries():
